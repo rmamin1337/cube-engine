@@ -1,0 +1,54 @@
+name: Cube Engine Build MacOS
+
+on:
+  push:
+    branches: [ "main", "release-**" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-dmg:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'true'
+
+      - name: Install dependencies from brew
+        run: |
+          brew install yaml-cpp glfw3 glew libpng openal-soft luajit libvorbis skypjack/entt/entt googletest
+
+      - name: Install specific version of GLM
+        run: |
+          curl -O https://raw.githubusercontent.com/Homebrew/homebrew-core/5c7655a866646aa4b857c002b8ae5465b9d26f65/Formula/g/glm.rb
+          brew install --formula glm.rb
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCUBEENGINE_BUILD_TESTS=ON -DCUBEENGINE_BUILD_APPDIR=1
+
+      - name: Build
+        run: cmake --build build -t install
+
+      - name: Make fix_dylibs.sh executable
+        run: chmod +x dev/fix_dylibs.sh
+
+      - name: Fix dylibs
+        run: ./dev/fix_dylibs.sh CubeEngine Release build
+
+      - name: Run tests
+        run: ctest --output-on-failure --test-dir build
+
+      - name: Create DMG
+        run: |
+          mkdir CubeEngineDmgContent
+          cp -r build/res CubeEngineDmgContent/
+          cp -r build/CubeEngine CubeEngineDmgContent/
+          cp -r build/libs CubeEngineDmgContent/libs
+          hdiutil create CubeEngineMacApp.dmg -volname "CubeEngine" -srcfolder CubeEngineDmgContent -ov -format UDZO
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: CubeEngineMacOs
+          path: CubeEngineMacApp.dmg

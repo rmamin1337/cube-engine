@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=CubeCore
+Comment=Clear And Fast Cube Game Engine in C++ with OpenGL.
+TryExec=CubeEngine
+Exec=CubeEngine
+Icon=CubeCore
+MimeType=image/x-foo;
+Categories=Game;

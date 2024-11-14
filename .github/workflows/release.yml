@@ -1,0 +1,42 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build_release:
+    name: Build Release
+    uses: ./.github/workflows/cmake.yml
+    with:
+      build_type: Release
+      upload_artifacts: true
+
+  create_release:
+    needs: build_release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: CubeEngine
+      - name: Pack artifacts
+        run: |
+          chmod +x CubeEngine
+          zip -r CubeEngine.zip res CubeEngine
+      - name: Grab and store version
+        run: |
+          tag_name=$(echo ${{ github.ref }} | grep -oE "v[^/]+$")
+          echo "VERSION=$tag_name" >> $GITHUB_ENV
+
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{ github.ref }}
+          name: CubeEngine ${{ env.VERSION }}
+          draft: true
+          prerelease: false
+          files: |
+            CubeEngine.zip
