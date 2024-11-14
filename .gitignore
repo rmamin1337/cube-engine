@@ -1,32 +1,54 @@
-# Prerequisites
-*.d
+Debug/src/**/*.d
+Debug/src/**/*.o
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+Debug/cube_engine
 
-# Precompiled Headers
-*.gch
-*.pch
+/build
+/cmake-build-**
+/screenshots
+/export
+/config
+/out
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
+/misc
+/world
+/worlds/**/*
+/settings.toml
+/controls.json
+/controls.toml
+/latest.log
 
-# Fortran module files
-*.mod
-*.smod
+/.idea
+.vscode
+/.vs
+*.sln
+*.vcxproj
+*.filters
+*.user
 
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
+.cache
+.settings
+.cproject
+.project
+.fleet
+.git
+/Default/
+AppDir
+appimage-build/
 
-# Executables
-*.exe
-*.out
-*.app
+# for vcpkg
+/vcpkg/
+.gitmodules
+
+# macOS folder attributes
+*.DS_Store
+
+*~
+
+/res/content/*
+!/res/content/base
+*.mtl
+
+# libs
+/libs/
+/vcpkg_installed/

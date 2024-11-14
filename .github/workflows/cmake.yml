@@ -1,0 +1,62 @@
+name: CMake
+
+on:
+  workflow_call:
+    inputs:
+      build_type:
+        description: Type of build (Debug, Release, RelWithDebInfo, MinSizeRel)
+        type: string
+        default: Debug
+      upload_artifacts:
+        description: Should upload artifacts or not
+        type: boolean
+        default: false
+      run_tests:
+        description: Run CTest after project build
+        type: boolean
+        default: false
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install libyaml-cpp-dev libglfw3-dev libglfw3 libglew-dev libglm-dev libpng-dev libopenal-dev libluajit-5.1-dev libvorbis-dev libgtest-dev
+          # fix luajit paths
+          sudo ln -s /usr/lib/x86_64-linux-gnu/libluajit-5.1.a /usr/lib/x86_64-linux-gnu/liblua-5.1.a
+          sudo ln -s /usr/include/luajit-2.1 /usr/include/lua
+          # install EnTT
+          git clone https://github.com/skypjack/entt.git
+          cd entt/build
+          cmake -DCMAKE_BUILD_TYPE=Release ..
+          sudo make install
+          cd ../..
+
+      - name: Configure CMake
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{inputs.build_type}} -DCUBEENGINE_BUILD_TESTS=ON
+
+      - name: Build
+        run: |
+          cmake --build ${{github.workspace}}/build --config ${{inputs.build_type}}
+          mv ${{github.workspace}}/build/CubeEngine CubeEngine
+      - name: Run tests
+        if: ${{ inputs.run_tests }}
+        run: ctest --test-dir ${{github.workspace}}/build
+      - name: Upload artifacts
+        if: ${{ inputs.upload_artifacts }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: CubeEngine
+          path: |
+            CubeEngine
+            res/*
